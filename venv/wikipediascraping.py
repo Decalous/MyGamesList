@@ -15,9 +15,11 @@ import pandas as pd                 #https://pandas.pydata.org/docs/
 ## MAYBE ADD NAMED RERELEASES LIKE CATHERINE CLASSIC AND FULL BODY
 ## SEPERATE SCRIPT FOR MORE DETAILED AND CUSTOMIZABLE QUERIES
 ## ABILITY TO GO BACK IN AND ADD / CHANGE ANY ERRORS
-## ABILITY TO SEARCH WITHOUT THE "(VIDEO GAME)"
+## ABILITY TO SEARCH WITHOUT THE " (VIDEO GAME)"
 ## ERROR CATCHING SO NOT EVERYTHING IS LOST!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ## HANDLE &nbsp; as spaces? maybe a clean string function that changes those and strips white space off the ends
+## HANDLE DATES NOT IN MONTH, DD, YYYY FORMAT LIKE Q2 2021
+## INSTEAD OF DOING ALL THE WORK TO GET MULTIPLE RELEASES WORKING, COULD JUST TAKE THE FIRST DATE AND USE IT
 
 
 def main():
@@ -28,7 +30,7 @@ def main():
     #gamenames = ["skyrim", "botw","meat boy","hades","Super Smash Bros brawl"] 
     gamesdict = {}
     for game in gamenames:
-        ## Super Smash Bros Brawl (video game) opens the wiki page for Super Smash Bros (Video game) FRICK
+        ## Super Smash Bros Brawl (video game) opens the wiki page for Super Smash Bros (Video game)
         ## going to have to ask the user to choose the wikipedia title from a search for every game
         ## could maybe avoid by doing some clever thing like looking into the page and finding something that would only be in a video game page but idk
         name = findName(f"{game} (video game)")
@@ -47,11 +49,12 @@ def main():
     print(f"Couldn't find these games: {notfound}")
 
 ## documentation linked at the top with the import lines
-#### important lesson in class attribute (MyHTMLParser.tbodycount) and instance attribute (self.tbodycount)
-#### class attribute is kept even between new instances of the class and instance attributes are reset with a new instance
+## personal note: important lesson in class attribute (MyHTMLParser.tbodycount) and instance attribute (self.tbodycount)
+##                class attribute is kept even between new instances of the class and instance attributes are reset with a new instance
+##                (https://stackoverflow.com/questions/9056957/correct-way-to-define-class-variables-in-python)
 class MyHTMLParser(HTMLParser):
     
-    ## Big revelation: elements in init are instance attributes and outside of init are class attributes (https://stackoverflow.com/questions/9056957/correct-way-to-define-class-variables-in-python)
+    ## personal note: elements in init are instance attributes and outside of init are class attributes
     def __init__(self, *, convert_charrefs=True):
         """Initialize and reset this instance.
         If convert_charrefs is True (the default), all character references
@@ -86,11 +89,9 @@ class MyHTMLParser(HTMLParser):
         if (not self.donesearch):
             if (data in list(self.infodic)):
                 self.title = data
-            #elif (MyHTMLParser.countdown > 0):
             # make sure not making a match with no title or awkward bits of data I don't want
             elif (not (self.title == "" or data[0] in ["[",",","&"] or data in [""," ","\n"])): ## & starts HTML entities like the popular &nbsp; https://mailtrap.io/blog/nbsp/
                 self.infodic[self.title].append(data) 
-                #MyHTMLParser.countdown -= 1
 
     def getInfodic():
         return self.infodic
@@ -105,7 +106,7 @@ def dateFormatter(date):
     if (len(day) == 1):
         day = ''.join(("0",day)) ## add the zero at beginning 
     monthdict = {"January": "01", "February": "02", "March": "03", "April": "04", "May": "05", "June": "06", "July": "07", "August": "08", "September": "09", "October": "10", "November": "11", "December": "12"}
-    month = monthdict[month] ## should translate the written month to a string of the number
+    month = monthdict[month] ## translates the written month to a string of the number
     date = '-'.join((year,month,day))
     return date
 
@@ -113,7 +114,6 @@ def dateFormatter(date):
 ## container for a region, date, and a list of platforms
 class Release:
     def __init__(self, region, date, platforms):
-        #self.platforms = []
         self.region = region
         if (self.region == None):
             self.region = "WW"
@@ -160,16 +160,11 @@ def releaseFormatter(list,totalplatforms):
             ## if date
             elif bool(re.match("^\s*\w+\s[0-9]{1,2},\s[0-9]{4}\s*$", list[i])):   ## someone added a random space infront so now I am allowing whitespace before and after
                 ## if already found a date, finish the release object and start a new one
-                #if date != None:
                 date = dateFormatter(list[i].strip())
                 ## only add if there are platforms in the list
                 if (len(myplatforms) > 0):
                     newRelease = Release(region, date, myplatforms.copy())
                     releaselist.append(newRelease)
-                ## reset region and platforms
-                #region = None
-                #myplatforms.clear()
-                ## either way, change the date to the newly found one    
             mytotalplatforms = []
             myaltplatforms = []
             for p in totalplatforms:
@@ -184,11 +179,6 @@ def releaseFormatter(list,totalplatforms):
                 myplatforms.clear()
             myplatforms.extend(mytotalplatforms)
             myplatforms.extend(myaltplatforms)
-            #if (date != None and len(myplatforms) != 0)
-        ## NOT ANYMORE add one more at the end since it won't always add the last bit in the for loop
-        #newRelease = Release(region, date, myplatforms.copy())
-        #releaselist.append(newRelease)
-    #print(f"releases: {releaselist[0].getPlatforms}")
     return releaselist
 
 
@@ -208,10 +198,8 @@ def dictprint(mydict, tab = 0):
 
 ## originally let user change information in dictionary by hand, now just points towards releaseFormatter
 def checkdict(mydict,game):
-    ## use regex to 
     mydict["Release"] = releaseFormatter(mydict["Release"],mydict["Platform(s)"])
-    #mydict["Release"] = "TEST"
-
+    ## EVEN IF NOT USING HERE, COULD STILL BE USEFUL BASE FOR CHANGING THINGS LATER
     ## hand change things
     # print(f"Please look over the data I found and tell me if it looks alright")
     # dictprint(mydict)
@@ -261,20 +249,14 @@ def checkdict(mydict,game):
             # ## let while loop again to check if it looks correct 
         # else:
             # print(f"I was expecting a 'y' or a 'n'. Try again.")
-            
     return(mydict)
     
    
-## iterate through a csv file and splits by new line and returns a list  
-def iterCSV(filename):   
+## iterate through a csv file and splits a given character (or default new line) and returns a list
+def iterCSV(filename, split = "\n"):
     file = open(filename)
-    rows = re.split("\n", file.read())
+    rows = re.split(split, file.read())
     print("finished splitting rows")
-    # for i in range(1, len(rows)):
-        # items = re.split(",", rows[i])
-        # findSummary(items[0] + " (video game)", 1)
-        # if (i % 10 == 0):
-            # print("row: ", i) # i like to see progress happening
     return rows
 
 
@@ -282,7 +264,7 @@ def iterCSV(filename):
 ## correct one, and then returns it; the user can also pick none of the results to return None
 def findName(name, numresults = 5):
     print(f"\nSearching for {name}.\nPlease help me choose the correct wikipedia page title.")
-    results = wikipedia.search(name, results=numresults,suggestion=False)
+    results = wikipedia.search(name, results = numresults, suggestion = False)
     for i in range(len(results)):
         print(f"{i}: {results[i]}")
     print(f"{numresults+1}: Choose this if no results look correct, there may not be a wikipedia page for this game")
@@ -305,7 +287,6 @@ def findName(name, numresults = 5):
 ## finds the summary from a page on wikipedia and gets a number of paragraphs that defaults to one
 ## returns a list of the paragraphs
 def findSummary(name, numpara=1):
-    #print(f"I'm looking for {name}")
     paragraphs = []
     try:
         paragraphs = re.split("\n", wikipedia.summary(name, auto_suggest=False)) ## summary defaults to auto_suggest=True
@@ -315,18 +296,14 @@ def findSummary(name, numpara=1):
             paragraphs = re.split("\n", wikipedia.summary(sugname[0], auto_suggest=False))
         except (wikipedia.exceptions.DisambiguationError, wikipedia.exceptions.PageError, ValueError, IndexError) as error:
                 print("I couldn't find ", name, sugname[0])
-                #nowork.append(name)
-
-    ## print/return
     result = []
     for p in range(numpara):
     # try used to avoid the problem of numpar exceeding the number of paragraphs 
         try:
             result.append(paragraphs[p])
-            #print(paragraphs[p])
         except IndexError:
             break
-        return result
+    return result
 
 
 ## finds the html of a wikipedia page and hand it to MyHTMLParser
@@ -334,25 +311,19 @@ def findSummary(name, numpara=1):
 def findInfo(name):
     parser = MyHTMLParser()
     info = {}
-    info.clear()
+    info.clear() ## not sure if still need to do this
     
-    #parser.init()
     print(f"\nI'm looking for {name}\n")
     try:
         myhtml = wikipedia.page(name, auto_suggest = False).html()
-        #print(wikipedia.page(name, auto_suggest = False).content)
     except (wikipedia.exceptions.DisambiguationError, wikipedia.exceptions.PageError) as error:
         try:
             sugname = wikipedia.search(name) ## can use for miss spelling or wrong page stuff
-            #print(sugname[0])
             myhtml = wikipedia.page(sugname[0], auto_suggest = False).html()
-            #print(wikipedia.page(sugname[0], auto_suggest = False).content)
         except (wikipedia.exceptions.DisambiguationError, wikipedia.exceptions.PageError, ValueError, IndexError) as error:
                 print(f"I couldn't find {name}")
                 notfound.append(name)
-    #print(myhtml)
     parser.feed(myhtml)
-    #print(parser.infodic)
     info = parser.infodic
     parser.reset()
     parser.close()
@@ -449,19 +420,15 @@ def exporttoSQLite(mydict):
     ## for now I am only user so don't need to add a reference to a user yet; would also have to make a users table
     ## can add stuff like amount paid, date added, etc later
     cur.execute("CREATE TABLE userToRelease (release_id INTEGER, status TEXT NOT NULL, score INTEGER, userToRelease_id INTEGER PRIMARY KEY, FOREIGN KEY (release_id) REFERENCES releases (release_id));")
-    
-    ## Format data for export 
-    ## DON'T THINK I NEED TO DO THIS
-    
+
     ## Populate tables
     # "Director(s)": [],"Publisher(s)": [],"Developer(s)": [],"Producer(s)": [],"Programmer(s)": [],
             # "Artist(s)": [],"Writer(s)": [],"Composer(s)": [],"Series": [],"Platform(s)": [],"Release": [],"Genre(s)": [],
             # "Mode(s)": [],"Designer(s)": [],"Engine": []}
-    #print(f"mydict: {mydict}")
     for game in mydict:
         summary = str(findSummary(game))
         cur.execute("INSERT INTO games (name, summary) VALUES (?, ?)", (game, summary))
-        ## grab gameID
+        ## grab gameID to use in future INSERTS
         mygame_id = cur.lastrowid
         ## handle people
         for role in ["Director", "Producer", "Programmer", "Artist", "Writer", "Composer", "Designer"]:
@@ -515,19 +482,18 @@ def exporttoSQLite(mydict):
                 cur.execute("INSERT INTO engineToGame (game_id, engine_id) VALUES (?, ?)", (mygame_id, myengine_id))
             except:
                 print(f"ERROR adding engine!")
+        ## only add new platforms into platform table
         for i in mydict[game]["Platform(s)"]:
             try:
                 cur.execute("INSERT INTO platforms (name) VALUES (?)", (i,))
                 #myplatform_id = cur.lastrowid
             except (sqlite3.IntegrityError): ## if unique contraint failed
+                ## adding platforms to games happens in the release table
                 pass
-                #cur.execute("SELECT platform_id FROM platform WHERE name = ?", (i,))
-                #myplatform_id = cur.fetchall()[0][0] 
         for i in range(len(mydict[game]["Release"])):
             for p in mydict[game]["Release"][i].platforms:
                 #try:
                 cur.execute("SELECT platform_id FROM platforms WHERE name = ?", (p,))
-                #print(cur.fetchall())
                 myplatform_id = cur.fetchall()[0][0]
                 cur.execute("INSERT INTO releases (game_id, platform_id, region, date) VALUES (?, ?, ?, ?)", (mygame_id, myplatform_id, mydict[game]["Release"][i].region, mydict[game]["Release"][i].date))
                 #except:
@@ -536,7 +502,7 @@ def exporttoSQLite(mydict):
     ## Commit changes
     con.commit()
 
-    ## do some queries to check db
+    ## do some queries to check db while we have con open
     queries(con)
     
     ## Close connection
