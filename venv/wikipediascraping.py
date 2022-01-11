@@ -46,6 +46,13 @@ def main():
     exporttoSQLite(gamesdict)
     print(f"Couldn't find these games: {notfound}")
 
+## replaces &nbsp; with a space and strips any leading or trailing whitespace and returns the cleaned string
+def cleanString(string):
+    string.replace("&nbsp;", " ")
+    string.strip()
+    return string
+
+
 ## documentation linked at the top with the import lines
 #### important lesson in class attribute (MyHTMLParser.tbodycount) and instance attribute (self.tbodycount)
 #### class attribute is kept even between new instances of the class and instance attributes are reset with a new instance
@@ -89,7 +96,7 @@ class MyHTMLParser(HTMLParser):
             #elif (MyHTMLParser.countdown > 0):
             # make sure not making a match with no title or awkward bits of data I don't want
             elif (not (self.title == "" or data[0] in ["[",",","&"] or data in [""," ","\n"])): ## & starts HTML entities like the popular &nbsp; https://mailtrap.io/blog/nbsp/
-                self.infodic[self.title].append(data) 
+                self.infodic[self.title].append(cleanString(data))
                 #MyHTMLParser.countdown -= 1
 
     def getInfodic():
@@ -98,7 +105,7 @@ class MyHTMLParser(HTMLParser):
 
 ## takes a date like Month, DD, YYYY and returns it formatted like YYYY-MM-DD
 def dateFormatter(date):
-    date = date.split(" ") ## wikipedia dates should be all formatted month(as string), DD(could be a single digit), YYYY
+    date = date.split(" ") ## wikipedia dates should be all formatted month(as string) DD(could be a single digit), YYYY
     month = date[0]
     day = date[1].strip(",")
     year = date[2]
@@ -161,7 +168,7 @@ def releaseFormatter(list,totalplatforms):
             elif bool(re.match("^\s*\w+\s[0-9]{1,2},\s[0-9]{4}\s*$", list[i])):   ## someone added a random space infront so now I am allowing whitespace before and after
                 ## if already found a date, finish the release object and start a new one
                 #if date != None:
-                date = dateFormatter(list[i].strip())
+                date = dateFormatter(cleanString(list[i]))
                 ## only add if there are platforms in the list
                 if (len(myplatforms) > 0):
                     newRelease = Release(region, date, myplatforms.copy())
@@ -322,7 +329,7 @@ def findSummary(name, numpara=1):
     for p in range(numpara):
     # try used to avoid the problem of numpar exceeding the number of paragraphs 
         try:
-            result.append(paragraphs[p])
+            result.append(cleanString(paragraphs[p]))
             #print(paragraphs[p])
         except IndexError:
             break
