@@ -11,13 +11,12 @@ import pandas as pd                 #https://pandas.pydata.org/docs/
 
 ## TO DO:
 ## ADD USER-GAME RELATIONSHIP 
-## PROBLEM WITH VERSIONS IN PUBLISHERS WITH REGIONS (SEE CATHERINE FULL BODY)
+## PROBLEM WITH VERSIONS IN PUBLISHERS WITH REGIONS (SEE CATHERINE FULL BODY) Handled?
 ## MAYBE ADD NAMED RERELEASES LIKE CATHERINE CLASSIC AND FULL BODY
 ## SEPERATE SCRIPT FOR MORE DETAILED AND CUSTOMIZABLE QUERIES
 ## ABILITY TO GO BACK IN AND ADD / CHANGE ANY ERRORS
 ## ABILITY TO SEARCH WITHOUT THE " (VIDEO GAME)"
 ## ERROR CATCHING SO NOT EVERYTHING IS LOST!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-## HANDLE &nbsp; as spaces? maybe a clean string function that changes those and strips white space off the ends
 ## HANDLE DATES NOT IN MONTH, DD, YYYY FORMAT LIKE Q2 2021
 ## INSTEAD OF DOING ALL THE WORK TO GET MULTIPLE RELEASES WORKING, COULD JUST TAKE THE FIRST DATE AND USE IT
 
@@ -29,17 +28,24 @@ def main():
     gamenames = iterCSV(filename)
     #gamenames = ["skyrim", "botw","meat boy","hades","Super Smash Bros brawl"] 
     gamesdict = {}
-    for game in gamenames:
+    ## can use start and end for troubleshooting different parts of the list without going through the whole list
+    ## start should be 0 and end should be len(gamenames) once project is ready
+    #start = 0
+    start = 36 ## right now going through all and checking for errors; up to this number do not raise errors
+    end = len(gamenames)
+    #end = 50
+    for i in range(start, len(gamenames)):
         ## Super Smash Bros Brawl (video game) opens the wiki page for Super Smash Bros (Video game)
         ## going to have to ask the user to choose the wikipedia title from a search for every game
         ## could maybe avoid by doing some clever thing like looking into the page and finding something that would only be in a video game page but idk
-        name = findName(f"{game} (video game)")
+        print(f"Index of gamenames list: {i}")
+        name = findName(f"{gamenames[i]} (video game)")
         print(name)
         if (name != None):
             gamesdict[name] = findInfo(f"{name}")
             gamesdict[name] = checkdict(gamesdict[name], name) ## let user double check and edit if needed
         else:
-            notfound.append(game)
+            notfound.append(gamenames[i])
     #dictprint(gamesdict)
     # for game in gamesdict:
         # for r in gamesdict[game]["Release"]: 
