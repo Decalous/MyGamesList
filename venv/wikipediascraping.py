@@ -25,7 +25,7 @@ import pandas as pd                 #https://pandas.pydata.org/docs/
 def main():
     notfound = []
     
-    filename = "MyGamesList\dabiglist.txt" 
+    filename = "dabiglist.txt"
     gamenames = iterCSV(filename)
     #gamenames = ["skyrim", "botw","meat boy","hades","Super Smash Bros brawl"] 
     gamesdict = {}
@@ -50,8 +50,8 @@ def main():
 
 ## replaces &nbsp; with a space and strips any leading or trailing whitespace and returns the cleaned string
 def cleanString(string):
-    string.replace("&nbsp;", " ")
-    string.strip()
+    string = string.replace("&nbsp;", " ")
+    string = string.strip()
     return string
 
 
@@ -107,9 +107,9 @@ class MyHTMLParser(HTMLParser):
 ## takes a date like Month, DD, YYYY and returns it formatted like YYYY-MM-DD
 def dateFormatter(date):
     date = date.split(" ") ## wikipedia dates should be all formatted month(as string) DD(could be a single digit), YYYY
-    month = date[0]
-    day = date[1].strip(",")
-    year = date[2]
+    month = cleanString(date[0])
+    day = date[1].strip(", ")
+    year = cleanString(date[2])
     if (len(day) == 1):
         day = ''.join(("0",day)) ## add the zero at beginning 
     monthdict = {"January": "01", "February": "02", "March": "03", "April": "04", "May": "05", "June": "06", "July": "07", "August": "08", "September": "09", "October": "10", "November": "11", "December": "12"}
@@ -131,7 +131,6 @@ class Release:
         return self.platforms
    
    
-## PONY ISLAND'S RELEASE IS SEPARATED BY &nbsp; INSTEAD OF SPACES AAAAAAAAAAAAAAAAAAAAAAAAAAAA
 ## Takes the ugly unformatted information from wikipedia on releases for a game and
 ## sorts them into a list of Release objects (see above) and returns it
 def releaseFormatter(list,totalplatforms):
@@ -139,15 +138,15 @@ def releaseFormatter(list,totalplatforms):
     date = None
     region = None
     myplatforms = []
-    altplatformnames = {"Windows": "Microsoft Windows", "PS3": "PlayStation 3", "PS4": "PlayStation 4", "PS5": "PlayStation 5"} ## will need updates
+    altplatformnames = {"Windows": "Microsoft Windows", "PS3": "PlayStation 3", "PS4": "PlayStation 4", "PS5": "PlayStation 5", "PS2": "PlayStation 2"} ## will need updates
     regionnames = ["NA", "JP", "PAL", "WW", "AU", "EU"]                                                                         ## will need updates
-    
+
     if (len(totalplatforms) == 1):
         myplatforms.append(totalplatforms[0])
-    
+
     ## check number of things in list
     leng = len(list)
-    
+
     if (leng == 1):
         ## reformat in the case of one things
         date = dateFormatter(list[0])
@@ -161,7 +160,7 @@ def releaseFormatter(list,totalplatforms):
             start = 1
         for i in range(start, len(list)):
             ## if region
-            #if len(list[i]) == 2: ## assuming regions are 2 (jp, na, au, eu, ww)  ### BIG PROBLEM THERE IS THE "PAL" REGION SO NOT ALL 2 LONG
+            #if len(list[i]) == 2: ## assuming re0gions are 2 (jp, na, au, eu, ww)  ### BIG PROBLEM THERE IS THE "PAL" REGION SO NOT ALL 2 LONG
             if (list[i] in regionnames):
                 region = list[i]
             ## if date
