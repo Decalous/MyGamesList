@@ -15,10 +15,10 @@ import pandas as pd                 #https://pandas.pydata.org/docs/
 ## MAYBE ADD NAMED RERELEASES LIKE CATHERINE CLASSIC AND FULL BODY
 ## SEPERATE SCRIPT FOR MORE DETAILED AND CUSTOMIZABLE QUERIES
 ## ABILITY TO GO BACK IN AND ADD / CHANGE ANY ERRORS
-## ABILITY TO SEARCH WITHOUT THE " (VIDEO GAME)"
 ## ERROR CATCHING SO NOT EVERYTHING IS LOST!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ## HANDLE DATES NOT IN MONTH, DD, YYYY FORMAT LIKE Q2 2021
 ## INSTEAD OF DOING ALL THE WORK TO GET MULTIPLE RELEASES WORKING, COULD JUST TAKE THE FIRST DATE AND USE IT
+## handle an item not having a release at all (Nintendo Labo does not, it has publication instead)
 
 
 def main():
@@ -31,7 +31,7 @@ def main():
     ## can use start and end for troubleshooting different parts of the list without going through the whole list
     ## start should be 0 and end should be len(gamenames) once project is ready
     #start = 0
-    start = 36 ## right now going through all and checking for errors; up to this number do not raise errors
+    start = 48 ## right now going through all and checking for errors; up to this number do not raise errors
     end = len(gamenames)
     #end = 50
     for i in range(start, len(gamenames)):
@@ -279,15 +279,20 @@ def findName(name, numresults = 5):
     results = wikipedia.search(name, results = numresults, suggestion = False)
     for i in range(len(results)):
         print(f"{i}: {results[i]}")
-    print(f"{numresults+1}: Choose this if no results look correct, there may not be a wikipedia page for this game")
+    print(f"{numresults}: Choose this if no results look correct, there may not be a wikipedia page for this game")
+    print(f"{numresults+1}: Choose this if you want to search wikipedia without the \" (video game)\" at the end")
     while True:
         try:
             inp = int(input("Press the number that matches the correct page.\n"))
-            if (inp == numresults+1):
+            if (inp == numresults):
                 name = None
                 break
-            elif (0 <= inp <= numresults):
+            elif (0 <= inp < numresults):
                 name = results[inp]
+                break
+            elif (inp == numresults+1):
+                ## search without the (video game) at the end
+                name = findName(name.removesuffix(" (video game)"))
                 break
             else:
                 print("Unexpected input (please enter a digit (ie: 3)")
