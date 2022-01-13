@@ -30,7 +30,7 @@ def main():
     ## can use start and end for troubleshooting different parts of the list without going through the whole list
     ## start should be 0 and end should be len(gamenames) once project is ready
     #start = 0
-    start = 48 ## right now going through all and checking for errors; up to this number do not raise errors
+    start = 167 ## right now going through all and checking for errors; up to this number do not raise errors
     end = len(gamenames)
     #end = 50
     for i in range(start, len(gamenames)):
@@ -111,7 +111,7 @@ class MyHTMLParser(HTMLParser):
 
 ## takes a date like Month, DD, YYYY and returns it formatted like YYYY-MM-DD
 def dateFormatter(date):
-    date = date.split(" ") ## wikipedia dates should be all formatted month(as string) DD(could be a single digit), YYYY
+    date = date.split() ## default split() catches more whitespace characters than doing split(" ")
     month = cleanString(date[0])
     day = date[1].strip(", ")
     year = cleanString(date[2])
