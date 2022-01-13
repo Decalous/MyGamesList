@@ -18,7 +18,6 @@ import pandas as pd                 #https://pandas.pydata.org/docs/
 ## ERROR CATCHING SO NOT EVERYTHING IS LOST!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ## HANDLE DATES NOT IN MONTH, DD, YYYY FORMAT LIKE Q2 2021
 ## INSTEAD OF DOING ALL THE WORK TO GET MULTIPLE RELEASES WORKING, COULD JUST TAKE THE FIRST DATE AND USE IT
-## handle an item not having a release at all (Nintendo Labo does not, it has publication instead)
 
 
 def main():
@@ -43,7 +42,7 @@ def main():
         print(name)
         if (name != None):
             gamesdict[name] = findInfo(f"{name}")
-            gamesdict[name] = checkdict(gamesdict[name], name) ## let user double check and edit if needed
+            gamesdict[name] = checkdict(gamesdict[name]) ## let user double check and edit if needed
         else:
             notfound.append(gamenames[i])
     #dictprint(gamesdict)
@@ -152,6 +151,8 @@ def releaseFormatter(list,totalplatforms):
 
     ## check number of things in list
     leng = len(list)
+    if leng == 0:
+        return
 
     if (leng == 1):
         ## reformat in the case of one things
@@ -209,7 +210,7 @@ def dictprint(mydict, tab = 0):
 
 
 ## originally let user change information in dictionary by hand, now just points towards releaseFormatter
-def checkdict(mydict,game):
+def checkdict(mydict):
     mydict["Release"] = releaseFormatter(mydict["Release"],mydict["Platform(s)"])
     ## EVEN IF NOT USING HERE, COULD STILL BE USEFUL BASE FOR CHANGING THINGS LATER
     ## hand change things
