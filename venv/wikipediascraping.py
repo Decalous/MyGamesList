@@ -18,6 +18,8 @@ import pandas as pd                 #https://pandas.pydata.org/docs/
 ## ERROR CATCHING SO NOT EVERYTHING IS LOST!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ## HANDLE DATES NOT IN MONTH, DD, YYYY FORMAT LIKE Q2 2021
 ## INSTEAD OF DOING ALL THE WORK TO GET MULTIPLE RELEASES WORKING, COULD JUST TAKE THE FIRST DATE AND USE IT
+## ADD A WAY TO GO BACK AFTER ENTERING A WRONG NAME DURING THE NAME PICKING PHASE
+## 000 GOT ACCEPTED AS 0 WHEN CHOOSING A NAME, PROBABLY NOT CORRECT
 
 
 def main():
@@ -30,7 +32,7 @@ def main():
     ## can use start and end for troubleshooting different parts of the list without going through the whole list
     ## start should be 0 and end should be len(gamenames) once project is ready
     #start = 0
-    start = 167 ## right now going through all and checking for errors; up to this number do not raise errors
+    start = 188 ## right now going through all and checking for errors; up to this number do not raise errors
     end = len(gamenames)
     #end = 50
     for i in range(start, len(gamenames)):
@@ -111,13 +113,25 @@ class MyHTMLParser(HTMLParser):
 
 ## takes a date like Month, DD, YYYY and returns it formatted like YYYY-MM-DD
 def dateFormatter(date):
+    monthdict = {"January": "01", "February": "02", "March": "03", "April": "04", "May": "05", "June": "06", "July": "07", "August": "08", "September": "09", "October": "10", "November": "11", "December": "12"}
+
     date = date.split() ## default split() catches more whitespace characters than doing split(" ")
-    month = cleanString(date[0])
-    day = date[1].strip(", ")
-    year = cleanString(date[2])
+    for i in date:
+        i = cleanString(i)
+        i = i.strip(",")
+        ## since dates aren't in a set format, need to search for each part (most are month dd, yyyy but Aviary Attorney is dd month yyyy)
+        if bool(re.match("^[0-9]{1,2}$", i)):
+            day = i
+            print("matched day")
+        elif bool(re.match("^[0-9]{4}$", i)):
+            year = i
+            print("matched year")
+        elif i in monthdict:
+            month = i
+            print("matched month")
+
     if (len(day) == 1):
         day = ''.join(("0",day)) ## add the zero at beginning 
-    monthdict = {"January": "01", "February": "02", "March": "03", "April": "04", "May": "05", "June": "06", "July": "07", "August": "08", "September": "09", "October": "10", "November": "11", "December": "12"}
     month = monthdict[month] ## translates the written month to a string of the number
     date = '-'.join((year,month,day))
     return date
