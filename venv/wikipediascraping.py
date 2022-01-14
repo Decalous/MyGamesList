@@ -177,7 +177,7 @@ def releaseFormatter(list,totalplatforms):
         ## sort and reformat all the information in case of multiple things
         start = 0
         ## this first date is just the first release date so it isn't paired with anything and we can ignore it
-        if bool(re.match("^\s*\w+\s[0-9]{1,2},\s[0-9]{4}\s*$", list[0])):
+        if bool(re.match("^\s*\w+\s[0-9]{1,2},\s[0-9]{4}\s*$", list[0])) or bool(re.match("^\s*[0-9]{1,2}\s\w+\s[0-9]{4}\s*$", list[0])):
             start = 1
         for i in range(start, len(list)):
             ## if region
@@ -185,7 +185,9 @@ def releaseFormatter(list,totalplatforms):
             if (list[i] in regionnames):
                 region = list[i]
             ## if date
-            elif bool(re.match("^\s*\w+\s[0-9]{1,2},\s[0-9]{4}\s*$", list[i])):   ## someone added a random space infront so now I am allowing whitespace before and after
+            ## someone added a random space infront so now I am allowing whitespace before and after
+            ## need to catch differently formatted dates
+            elif bool(re.match("^\s*\w+\s[0-9]{1,2},?\s[0-9]{4}\s*$", list[i])) or bool(re.match("^\s*[0-9]{1,2}\s\w+\s[0-9]{4}\s*$", list[i])):
                 ## if already found a date, finish the release object and start a new one
                 date = dateFormatter(cleanString(list[i]))
                 ## only add if there are platforms in the list
