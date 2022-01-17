@@ -31,10 +31,10 @@ def main():
     ## can use start and end for troubleshooting different parts of the list without going through the whole list
     ## start should be 0 and end should be len(gamenames) once project is ready
     #start = 0
-    start = 224 ## right now going through all and checking for errors; up to this number do not raise errors
-    end = len(gamenames)
-    #end = 50
-    for i in range(start, len(gamenames)):
+    start = 30 ## right now going through all and checking for errors; up to this number do not raise errors
+    #end = len(gamenames)
+    end = 40
+    for i in range(start, end):
         ## Super Smash Bros Brawl (video game) opens the wiki page for Super Smash Bros (Video game)
         ## going to have to ask the user to choose the wikipedia title from a search for every game
         ## could maybe avoid by doing some clever thing like looking into the page and finding something that would only be in a video game page but idk
@@ -424,7 +424,8 @@ def addCompany(cur, role, list, gameID):
 ## formats the data and sorts out any unneeded data from in mydict
 ## creates a lot of tables and populates them with information from mydict
 def exporttoSQLite(mydict):
-    dbname = "MyGamesList\MyGamesListv0-1.db"  #:memory: creates a temporary database, good for testing
+    #dbname = "MyGamesList\MyGamesListv0-1.db"
+    dbname = ":memory:" #:memory: creates a temporary database, good for testing
     con = sqlite3.connect(dbname)
     cur = con.cursor()
     ## Create tables
@@ -457,6 +458,7 @@ def exporttoSQLite(mydict):
             # "Artist(s)": [],"Writer(s)": [],"Composer(s)": [],"Series": [],"Platform(s)": [],"Release": [],"Genre(s)": [],
             # "Mode(s)": [],"Designer(s)": [],"Engine": []}
     for game in mydict:
+        print(game)
         summary = str(findSummary(game))
         cur.execute("INSERT INTO games (name, summary) VALUES (?, ?)", (game, summary))
         ## grab gameID to use in future INSERTS
@@ -521,14 +523,19 @@ def exporttoSQLite(mydict):
             except (sqlite3.IntegrityError): ## if unique contraint failed
                 ## adding platforms to games happens in the release table
                 pass
-        for i in range(len(mydict[game]["Release"])):
-            for p in mydict[game]["Release"][i].platforms:
-                #try:
-                cur.execute("SELECT platform_id FROM platforms WHERE name = ?", (p,))
-                myplatform_id = cur.fetchall()[0][0]
-                cur.execute("INSERT INTO releases (game_id, platform_id, region, date) VALUES (?, ?, ?, ?)", (mygame_id, myplatform_id, mydict[game]["Release"][i].region, mydict[game]["Release"][i].date))
-                #except:
-                    #print("ERROR ADDING RELEASE")
+        try:
+            for i in range(len(mydict[game]["Release"])):
+                for p in mydict[game]["Release"][i].platforms:
+                    try:
+                        cur.execute("SELECT platform_id FROM platforms WHERE name = ?", (p,))
+                        myplatform_id = cur.fetchall()[0][0]
+                        cur.execute("INSERT INTO releases (game_id, platform_id, region, date) VALUES (?, ?, ?, ?)", (mygame_id, myplatform_id, mydict[game]["Release"][i].region, mydict[game]["Release"][i].date))
+                    except:
+                        print(f"ERROR ADDING RELEASE FOR {game}")
+                        pass
+        except:
+            print(f"ERROR ADDING RELEASES FOR {game}")
+            pass
 
     ## Commit changes
     con.commit()
@@ -561,7 +568,3 @@ def queries(con):
 
 if __name__ == '__main__': ## note to self: https://www.youtube.com/watch?v=g_wlZ9IhbTs
     main()
-
-
-
-## class = infobox hproduct
