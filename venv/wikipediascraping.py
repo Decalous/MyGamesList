@@ -31,7 +31,7 @@ def main():
     ## can use start and end for troubleshooting different parts of the list without going through the whole list
     ## start should be 0 and end should be len(gamenames) once project is ready
     #start = 0
-    start = 188 ## right now going through all and checking for errors; up to this number do not raise errors
+    start = 224 ## right now going through all and checking for errors; up to this number do not raise errors
     end = len(gamenames)
     #end = 50
     for i in range(start, len(gamenames)):
@@ -290,6 +290,7 @@ def iterCSV(filename, split = "\n"):
 def findName(name, numresults = 5):
     print(f"\nSearching for {name}.\nPlease help me choose the correct wikipedia page title.")
     results = wikipedia.search(name, results = numresults, suggestion = False)
+    numresults = len(results)
     for i in range(len(results)):
         print(f"{i}: {results[i]}")
     print(f"{numresults}: Choose this if no results look correct, there may not be a wikipedia page for this game")
