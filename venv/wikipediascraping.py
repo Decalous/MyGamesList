@@ -13,12 +13,13 @@ import pandas as pd                 #https://pandas.pydata.org/docs/
 ## ADD USER-GAME RELATIONSHIP 
 ## PROBLEM WITH VERSIONS IN PUBLISHERS WITH REGIONS (SEE CATHERINE FULL BODY) Handled?
 ## MAYBE ADD NAMED RERELEASES LIKE CATHERINE CLASSIC AND FULL BODY
-## SEPERATE SCRIPT FOR MORE DETAILED AND CUSTOMIZABLE QUERIES
+## SEPARATE SCRIPT FOR MORE DETAILED AND CUSTOMIZABLE QUERIES
 ## ABILITY TO GO BACK IN AND ADD / CHANGE ANY ERRORS
-## ERROR CATCHING SO NOT EVERYTHING IS LOST!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+## ERROR CATCHING SO NOT EVERYTHING IS LOST!
 ## HANDLE DATES NOT IN MONTH, DD, YYYY FORMAT LIKE Q2 2021
-## INSTEAD OF DOING ALL THE WORK TO GET MULTIPLE RELEASES WORKING, COULD JUST TAKE THE FIRST DATE AND USE IT
 ## ADD A WAY TO GO BACK AFTER ENTERING A WRONG NAME DURING THE NAME PICKING PHASE
+## make matching in database not case sensitive, rn role-playing and Role-playing are 2 different genres
+## some messy stuff is coming through like (PC) as a company from Crypt of the Necrodancer; not sure if I should try to block it or fix later
 
 
 def main():
@@ -31,9 +32,9 @@ def main():
     ## can use start and end for troubleshooting different parts of the list without going through the whole list
     ## start should be 0 and end should be len(gamenames) once project is ready
     #start = 0
-    start = 30 ## right now going through all and checking for errors; up to this number do not raise errors
+    start = 50 ## right now going through all and checking for errors; up to this number do not raise errors
     #end = len(gamenames)
-    end = 40
+    end = 60
     for i in range(start, end):
         ## Super Smash Bros Brawl (video game) opens the wiki page for Super Smash Bros (Video game)
         ## going to have to ask the user to choose the wikipedia title from a search for every game
@@ -548,10 +549,11 @@ def exporttoSQLite(mydict):
 
 
 def queries(con):
+    pd.set_option('max_columns', None)
     ## Test some queries
     #cur.execute("SELECT * FROM games")
     #print(cur.fetchall())
-    print(pd.read_sql_query("SELECT game_id, name FROM games", con))
+    #print(pd.read_sql_query("SELECT game_id, name FROM games", con))
     #print(pd.read_sql_query("SELECT * FROM persons", con))
     #print(pd.read_sql_query("SELECT * FROM developmentToRole", con))
     #print(pd.read_sql_query("SELECT * FROM companies", con))
@@ -560,10 +562,22 @@ def queries(con):
     #print(pd.read_sql_query("SELECT * FROM modes", con))
     #print(pd.read_sql_query("SELECT * FROM genres", con))
     ## INNER JOIN going to be my best friend for these relational tables
-    print(pd.read_sql_query("SELECT games.name, series.name FROM seriesToGame INNER JOIN games USING (game_id) INNER JOIN series USING (series_id)", con))
+    #print(pd.read_sql_query("SELECT games.name, series.name FROM seriesToGame INNER JOIN games USING (game_id) INNER JOIN series USING (series_id)", con))
     print(pd.read_sql_query("SELECT games.name, platforms.name, date, releases.region FROM releases INNER JOIN games USING (game_id) INNER JOIN platforms USING (platform_id)", con))
     #print(pd.read_sql_query("SELECT * FROM modeToGame", con))
     #print(pd.read_sql_query("SELECT * FROM genreToGame", con))
+
+    ## FOR DEBUGGING PURPOSES ONLY
+    while True:
+        inp = input("Try a query or type QUIT to quit")
+        if (inp == "QUIT"):
+            break
+        else:
+            try:
+                print(pd.read_sql_query(inp, con))
+            except:
+                print("Error reading query, try again")
+    pd.reset_option("max_columns")
 
 
 if __name__ == '__main__': ## note to self: https://www.youtube.com/watch?v=g_wlZ9IhbTs
