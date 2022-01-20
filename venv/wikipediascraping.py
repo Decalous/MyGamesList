@@ -15,8 +15,8 @@ import pandas as pd                 #https://pandas.pydata.org/docs/
 ## MAYBE ADD NAMED RERELEASES LIKE CATHERINE CLASSIC AND FULL BODY
 ## SEPARATE SCRIPT FOR MORE DETAILED AND CUSTOMIZABLE QUERIES
 ## ABILITY TO GO BACK IN AND ADD / CHANGE ANY ERRORS
-## ERROR CATCHING SO NOT EVERYTHING IS LOST!
-## HANDLE DATES NOT IN MONTH, DD, YYYY FORMAT LIKE Q2 2021
+## ERROR CATCHING SO NOT EVERYTHING IS LOST! went through the whole list without crashing once; will try again
+## HANDLE DATES NOT IN MONTH, DD, YYYY FORMAT LIKE Q2 2021; they aren't throwing errors just being missed right now
 ## ADD A WAY TO GO BACK AFTER ENTERING A WRONG NAME DURING THE NAME PICKING PHASE
 ## make matching in database not case sensitive, rn role-playing and Role-playing are 2 different genres
 ## some messy stuff is coming through like (PC) as a company from Crypt of the Necrodancer; not sure if I should try to block it or fix later
@@ -430,13 +430,14 @@ def exporttoSQLite(mydict):
     con = sqlite3.connect(dbname)
     cur = con.cursor()
     ## Create tables
+    ## COLLATE NOCASE lets a column be case insensitive https://stackoverflow.com/questions/973541/how-to-set-sqlite3-to-be-case-insensitive-when-string-comparing
     ## this is going to be ugly looking; maybe I can clean up later?
     cur.execute("CREATE TABLE games (game_id INTEGER PRIMARY KEY, name TEXT UNIQUE NOT NULL, summary TEXT);")
-    cur.execute("CREATE TABLE platforms (platform_id INTEGER PRIMARY KEY, name TEXT UNIQUE NOT NULL);")
-    cur.execute("CREATE TABLE genres (genre_id INTEGER PRIMARY KEY, name TEXT UNIQUE NOT NULL);")
-    cur.execute("CREATE TABLE modes (mode_id INTEGER PRIMARY KEY, name TEXT UNIQUE NOT NULL);")
+    cur.execute("CREATE TABLE platforms (platform_id INTEGER PRIMARY KEY, name TEXT UNIQUE NOT NULL COLLATE NOCASE);")
+    cur.execute("CREATE TABLE genres (genre_id INTEGER PRIMARY KEY, name TEXT UNIQUE NOT NULL COLLATE NOCASE);")
+    cur.execute("CREATE TABLE modes (mode_id INTEGER PRIMARY KEY, name TEXT UNIQUE NOT NULL COLLATE NOCASE);")
     cur.execute("CREATE TABLE series (series_id INTEGER PRIMARY KEY, name TEXT UNIQUE NOT NULL);")
-    cur.execute("CREATE TABLE engines (engine_id INTEGER PRIMARY KEY, name TEXT NOT NULL);")
+    cur.execute("CREATE TABLE engines (engine_id INTEGER PRIMARY KEY, name TEXT NOT NULL COLLATE NOCASE);")
     cur.execute("CREATE TABLE persons (person_id INTEGER PRIMARY KEY, name TEXT UNIQUE NOT NULL);")
     cur.execute("CREATE TABLE companies (company_id INTEGER PRIMARY KEY, name TEXT UNIQUE NOT NULL);")
     ## most confusing one so far; dates in format: YYYY-MM-DD
@@ -444,8 +445,8 @@ def exporttoSQLite(mydict):
     
     
     ## TO DO "ON DELETE" AND "ON UPDATE" ACTIONS FOR FOREIGN KEYS
-    cur.execute("CREATE TABLE developmentToRole (game_id INTEGER, person_id INTEGER, role TEXT, PRIMARY KEY (game_id, person_id, role), FOREIGN KEY (game_id) REFERENCES games (game_id), FOREIGN KEY (person_id) REFERENCES persons (person_id));")
-    cur.execute("CREATE TABLE companyToRole (game_id INTEGER, company_id INTEGER, role TEXT, region TEXT, PRIMARY KEY (game_id, company_id, role), FOREIGN KEY (game_id) REFERENCES games (game_id), FOREIGN KEY (company_id) REFERENCES companies (company_id));")
+    cur.execute("CREATE TABLE developmentToRole (game_id INTEGER, person_id INTEGER, role TEXT COLLATE NOCASE, PRIMARY KEY (game_id, person_id, role), FOREIGN KEY (game_id) REFERENCES games (game_id), FOREIGN KEY (person_id) REFERENCES persons (person_id));")
+    cur.execute("CREATE TABLE companyToRole (game_id INTEGER, company_id INTEGER, role TEXT COLLATE NOCASE, region TEXT, PRIMARY KEY (game_id, company_id, role), FOREIGN KEY (game_id) REFERENCES games (game_id), FOREIGN KEY (company_id) REFERENCES companies (company_id));")
     cur.execute("CREATE TABLE genreToGame (game_id INTEGER, genre_id INTEGER, PRIMARY KEY (game_id, genre_id), FOREIGN KEY (game_id) REFERENCES games (game_id), FOREIGN KEY (genre_id) REFERENCES genres (genre_id));")
     cur.execute("CREATE TABLE modeToGame (game_id INTEGER, mode_id INTEGER, PRIMARY KEY (game_id, mode_id), FOREIGN KEY (game_id) REFERENCES games (game_id), FOREIGN KEY (mode_id) REFERENCES modes (mode_id));")
     cur.execute("CREATE TABLE seriesToGame (game_id INTEGER, series_id INTEGER, PRIMARY KEY (game_id, series_id), FOREIGN KEY (game_id) REFERENCES games (game_id), FOREIGN KEY (series_id) REFERENCES series (series_id));")
@@ -566,6 +567,11 @@ def queries(con):
     print(pd.read_sql_query("SELECT games.name, platforms.name, date, releases.region FROM releases INNER JOIN games USING (game_id) INNER JOIN platforms USING (platform_id)", con))
     #print(pd.read_sql_query("SELECT * FROM modeToGame", con))
     #print(pd.read_sql_query("SELECT * FROM genreToGame", con))
+
+    ## by platform
+    ## publisher / developer
+    ## by genre
+    ##
 
     ## FOR DEBUGGING PURPOSES ONLY
     while True:
