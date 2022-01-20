@@ -17,8 +17,7 @@ import pandas as pd                 #https://pandas.pydata.org/docs/
 ## ABILITY TO GO BACK IN AND ADD / CHANGE ANY ERRORS
 ## ERROR CATCHING SO NOT EVERYTHING IS LOST! went through the whole list without crashing once; will try again
 ## HANDLE DATES NOT IN MONTH, DD, YYYY FORMAT LIKE Q2 2021; they aren't throwing errors just being missed right now
-## ADD A WAY TO GO BACK AFTER ENTERING A WRONG NAME DURING THE NAME PICKING PHASE
-## make matching in database not case sensitive, rn role-playing and Role-playing are 2 different genres
+## ADD way to delete the information gathered on a wrong input after going back and fixing the name
 ## some messy stuff is coming through like (PC) as a company from Crypt of the Necrodancer; not sure if I should try to block it or fix later
 
 
@@ -35,18 +34,35 @@ def main():
     start = 50 ## right now going through all and checking for errors; up to this number do not raise errors
     #end = len(gamenames)
     end = 60
-    for i in range(start, end):
+    #for i in range(start, end):
+    i = start
+    ## using while loop so I can go back an iteration if user misclicks a name
+    while i < end and i >= start:
         ## Super Smash Bros Brawl (video game) opens the wiki page for Super Smash Bros (Video game)
         ## going to have to ask the user to choose the wikipedia title from a search for every game
         ## could maybe avoid by doing some clever thing like looking into the page and finding something that would only be in a video game page but idk
         print(f"Index of gamenames list: {i}")
         name = findName(f"{gamenames[i]} (video game)")
         print(name)
-        if (name != None):
+        if (name == "BACK" and i > 0):
+            i -= 1
+            while True:
+                print(f"Index of gamenames list: {i}")
+                name = findName(f"{gamenames[i]} (video game)")
+                print(name)
+                if (name == "BACK"):
+                    print("Sorry, can only go back one name.")
+                else:
+                    break
+            # if (name != None):
+            #     gamesdict[name] = findInfo(f"{name}")
+            #     gamesdict[name] = checkdict(gamesdict[name])  ## let user double check and edit if needed
+        elif (name != None):
             gamesdict[name] = findInfo(f"{name}")
             gamesdict[name] = checkdict(gamesdict[name]) ## let user double check and edit if needed
         else:
             notfound.append(gamenames[i])
+        i += 1
     #dictprint(gamesdict)
     # for game in gamesdict:
         # for r in gamesdict[game]["Release"]: 
@@ -288,17 +304,27 @@ def iterCSV(filename, split = "\n"):
 
 ## uses the wikipedia search function to get numresults for a name, asks for the user to pick the 
 ## correct one, and then returns it; the user can also pick none of the results to return None
-def findName(name, numresults = 5):
+def findName(name, trimmedTag = False, numresults = 5):
     print(f"\nSearching for {name}.\nPlease help me choose the correct wikipedia page title.")
     results = wikipedia.search(name, results = numresults, suggestion = False)
     numresults = len(results)
     for i in range(len(results)):
         print(f"{i}: {results[i]}")
     print(f"{numresults}: Choose this if no results look correct, there may not be a wikipedia page for this game")
-    print(f"{numresults+1}: Choose this if you want to search wikipedia without the \" (video game)\" at the end")
+    if (not trimmedTag):
+        print(f"{numresults+1}: Choose this if you want to search wikipedia without the \" (video game)\" at the end")
+    else:
+        print(f"{numresults+1}: Choose this if you want to search wikipedia with the \" (video game)\" at the end")
+    print(f"BACK: Type BACK if you missentered some information for the last name and want to go back")
     while True:
         try:
-            inp = int(input("Press the number that matches the correct page.\n"))
+            inp = input("Press the number that matches the correct page.\n")
+            if (inp == "BACK"):
+                name = "BACK"
+                print("\nGoing back. Make sure to choose the correct name this time :)\n")
+                break
+            else:
+                inp = int(inp)
             if (inp == numresults):
                 name = None
                 break
@@ -307,7 +333,10 @@ def findName(name, numresults = 5):
                 break
             elif (inp == numresults+1):
                 ## search without the (video game) at the end
-                name = findName(name.removesuffix(" (video game)"))
+                if (not trimmedTag):
+                    name = findName(name.removesuffix(" (video game)"), True)
+                else:
+                    name = findName(name + " (video game)", False)
                 break
             else:
                 print("Unexpected input (please enter a digit (ie: 3)")
